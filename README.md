@@ -1,4 +1,5 @@
 # TAMUOnCHAIN-identity-layer
+
 ​🏔️ TAMU On-Chain (Identity Layer)
 ​Empowering Kota Marudu, Sabah through Decentralized Identity.
 ​🎯 Visi Kami
@@ -12,8 +13,3 @@ Di Kota Marudu, gaji purata adalah sekitar RM 1,500 ($250 - $280 USD). Ramai bel
 ​🚀 Cara Menjalankan (Untuk Developer)
 ​Jalankan skrip persediaan: ./init_project.sh
 ​Lancarkan server: docker-compose up -d
-​💡 Kenapa letak ayat ni Boss?
-​Profesional: Orang luar nampak Boss bukan sekadar koding, tapi ada misi sosial yang jelas.
-​Senang faham: Sukarelawan terus tahu cara mahu jalankan kod Boss tanpa perlu tanya banyak.
-​Link ke Substack: Jangan lupa nanti letak link Substack Boss di bawah bahagian visi supaya dorang boleh baca cerita penuh.
-​Sudah siap kemas README.md ni Boss? Mahu saya tunjukkan langkah seterusnya untuk pindahkan kod docker-compose tu ke file yang betul? 🏔️🔥🚀
