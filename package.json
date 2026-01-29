@@ -1,0 +1,31 @@
+{
+  "name": "tamu-onchain-identity-layer",
+  "version": "1.0.0",
+  "description": "TAMU On-Chain Identity Layer - Decentralized Identity for Kota Marudu, Sabah",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "dotenv": "^16.3.1",
+    "siwe": "^2.1.4",
+    "ethers": "^5.7.2",
+    "pg": "^8.11.3",
+    "uuid": "^9.0.1",
+    "ioredis": "^5.3.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/node": "^20.10.5",
+    "@types/pg": "^8.10.9",
+    "@types/uuid": "^9.0.7",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2"
+  }
+}

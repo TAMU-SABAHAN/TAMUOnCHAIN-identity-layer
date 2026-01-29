@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAMUOnCHAIN Copilot - Identity & Referral Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .section p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button.secondary {
+            background: #764ba2;
+        }
+        
+        button.secondary:hover {
+            background: #653a8a;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .response {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            display: none;
+        }
+        
+        .response.visible {
+            display: block;
+        }
+        
+        .response.success {
+            border-color: #28a745;
+            background: #f0fdf4;
+        }
+        
+        .response.error {
+            border-color: #dc3545;
+            background: #fef2f2;
+        }
+        
+        .response pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+            margin-left: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏔️ TAMUOnCHAIN Copilot</h1>
+        <p class="subtitle">Identity Layer - Phase 1 Interface</p>
+        
+        <!-- ENS Domain Section -->
+        <div class="section">
+            <h2>🌐 ENS Domain Management</h2>
+            <p>Access and verify your Ethereum Name Service (ENS) domain. ENS domains provide human-readable names for Ethereum addresses.</p>
+            <div class="button-group">
+                <button onclick="navigateToENS()">
+                    Open ENS Domain (jrsteve.eth)
+                </button>
+                <button onclick="checkENSInfo()" class="secondary">
+                    View ENS Info
+                </button>
+            </div>
+            <div id="ensResponse" class="response"></div>
+        </div>
+        
+        <!-- Referral Registration Section -->
+        <div class="section">
+            <h2>🔗 Referral Code Registration</h2>
+            <p>Register and bind your referral code to your Ethereum address. This connects your identity to the referral system.</p>
+            
+            <div class="input-group">
+                <label for="referralCode">Referral Code:</label>
+                <input type="text" id="referralCode" placeholder="Enter your referral code" />
+            </div>
+            
+            <div class="input-group">
+                <label for="ensName">ENS Name (Optional):</label>
+                <input type="text" id="ensName" placeholder="yourname.eth" />
+            </div>
+            
+            <div class="button-group">
+                <button onclick="registerReferral()">
+                    Register Referral Code
+                </button>
+            </div>
+            <div id="referralResponse" class="response"></div>
+        </div>
+        
+        <!-- Event Logs Section -->
+        <div class="section">
+            <h2>📊 Referral Event Logs</h2>
+            <p>View recent referral events and activity. Track attributed events and their details.</p>
+            
+            <div class="input-group">
+                <label for="eventLimit">Number of events to retrieve:</label>
+                <input type="number" id="eventLimit" value="10" min="1" max="100" />
+            </div>
+            
+            <div class="button-group">
+                <button onclick="fetchEventLogs()">
+                    Fetch Event Logs
+                </button>
+                <button onclick="clearEventLogs()" class="secondary">
+                    Clear Display
+                </button>
+            </div>
+            <div id="eventResponse" class="response"></div>
+        </div>
+        
+        <!-- Audit Logs Section -->
+        <div class="section">
+            <h2>🔍 Audit Event Logs</h2>
+            <p>Log and view audit events for admin tracking. Monitor user activity and system interactions.</p>
+            
+            <div class="input-group">
+                <label for="auditEventType">Event Type:</label>
+                <input type="text" id="auditEventType" placeholder="e.g., ens_verification, referral_binding" />
+            </div>
+            
+            <div class="input-group">
+                <label for="auditData">Event Data (JSON, optional):</label>
+                <textarea id="auditData" placeholder='{"key": "value"}'></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button onclick="logAuditEvent()">
+                    Log Audit Event
+                </button>
+                <button onclick="fetchAuditLogs()" class="secondary">
+                    Fetch Audit Logs
+                </button>
+            </div>
+            <div id="auditResponse" class="response"></div>
+        </div>
+        
+        <div class="footer">
+            Empowering Kota Marudu, Sabah through Decentralized Identity 🇲🇾
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        
+        /**
+         * Navigate to ENS domain page
+         */
+        function navigateToENS() {
+            const ensUrl = 'https://app.ens.domains/jrsteve.eth';
+            window.open(ensUrl, '_blank');
+            
+            // Log this navigation as an audit event
+            logAuditEventAPI('ens_navigation', { 
+                ensName: 'jrsteve.eth',
+                url: ensUrl 
+            });
+        }
+        
+        /**
+         * Check ENS information
+         */
+        async function checkENSInfo() {
+            const responseDiv = document.getElementById('ensResponse');
+            responseDiv.className = 'response visible success';
+            
+            const ensName = document.getElementById('ensName').value || 'jrsteve.eth';
+            
+            const info = {
+                message: "ENS domain information",
+                ensName: ensName,
+                ensUrl: `https://app.ens.domains/${ensName}`,
+                description: "Click 'Open ENS Domain' to view and manage this ENS name",
+                features: [
+                    "Forward resolution: Maps ENS name to Ethereum address",
+                    "Reverse resolution: Maps Ethereum address to ENS name",
+                    "Decentralized naming system for Web3"
+                ]
+            };
+            
+            responseDiv.innerHTML = `<pre>${JSON.stringify(info, null, 2)}</pre>`;
+        }
+        
+        /**
+         * Register referral code via /api/verify
+         */
+        async function registerReferral() {
+            const responseDiv = document.getElementById('referralResponse');
+            const referralCode = document.getElementById('referralCode').value;
+            const ensName = document.getElementById('ensName').value;
+            
+            if (!referralCode) {
+                responseDiv.className = 'response visible error';
+                responseDiv.innerHTML = '<pre>Error: Please enter a referral code</pre>';
+                return;
+            }
+            
+            responseDiv.className = 'response visible';
+            responseDiv.innerHTML = '<pre>Note: Full SIWE authentication requires wallet integration.\n\nTo complete referral registration:\n1. Connect your Ethereum wallet\n2. Request a nonce from GET /api/nonce\n3. Sign a SIWE message with your wallet\n4. Submit the signature along with your referral code to POST /api/verify\n\nFor now, this interface demonstrates the API structure.\n\nExpected payload:\n' + JSON.stringify({
+                message: "SIWE message (EIP-4361 format)",
+                signature: "0x...",
+                referralCode: referralCode,
+                ens: ensName || undefined
+            }, null, 2) + '</pre>';
+            
+            // Log the intent
+            await logAuditEventAPI('referral_registration_intent', {
+                referralCode,
+                ensName: ensName || null
+            });
+        }
+        
+        /**
+         * Fetch event logs from /api/referral/event
+         */
+        async function fetchEventLogs() {
+            const responseDiv = document.getElementById('eventResponse');
+            const limit = document.getElementById('eventLimit').value;
+            
+            try {
+                responseDiv.className = 'response visible';
+                responseDiv.innerHTML = '<pre>Loading event logs...</pre>';
+                
+                const response = await fetch(`${API_BASE}/api/referral/event?limit=${limit}`);
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    responseDiv.className = 'response visible success';
+                    responseDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    responseDiv.className = 'response visible error';
+                    responseDiv.innerHTML = `<pre>Error: ${data.error || 'Failed to fetch events'}</pre>`;
+                }
+                
+                // Log this fetch
+                await logAuditEventAPI('event_logs_viewed', { limit: Number(limit) });
+            } catch (err) {
+                responseDiv.className = 'response visible error';
+                responseDiv.innerHTML = `<pre>Error: ${err.message}</pre>`;
+            }
+        }
+        
+        /**
+         * Clear event logs display
+         */
+        function clearEventLogs() {
+            const responseDiv = document.getElementById('eventResponse');
+            responseDiv.className = 'response';
+            responseDiv.innerHTML = '';
+        }
+        
+        /**
+         * Log an audit event
+         */
+        async function logAuditEvent() {
+            const responseDiv = document.getElementById('auditResponse');
+            const eventType = document.getElementById('auditEventType').value;
+            const auditDataStr = document.getElementById('auditData').value;
+            
+            if (!eventType) {
+                responseDiv.className = 'response visible error';
+                responseDiv.innerHTML = '<pre>Error: Please enter an event type</pre>';
+                return;
+            }
+            
+            let eventData = null;
+            if (auditDataStr) {
+                try {
+                    eventData = JSON.parse(auditDataStr);
+                } catch (err) {
+                    responseDiv.className = 'response visible error';
+                    responseDiv.innerHTML = '<pre>Error: Invalid JSON in event data</pre>';
+                    return;
+                }
+            }
+            
+            try {
+                responseDiv.className = 'response visible';
+                responseDiv.innerHTML = '<pre>Logging audit event...</pre>';
+                
+                const response = await fetch(`${API_BASE}/api/referral/audit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        eventType,
+                        eventData
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    responseDiv.className = 'response visible success';
+                    responseDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    responseDiv.className = 'response visible error';
+                    responseDiv.innerHTML = `<pre>Error: ${data.error || 'Failed to log audit event'}</pre>`;
+                }
+            } catch (err) {
+                responseDiv.className = 'response visible error';
+                responseDiv.innerHTML = `<pre>Error: ${err.message}</pre>`;
+            }
+        }
+        
+        /**
+         * Fetch audit logs
+         */
+        async function fetchAuditLogs() {
+            const responseDiv = document.getElementById('auditResponse');
+            const eventType = document.getElementById('auditEventType').value;
+            
+            try {
+                responseDiv.className = 'response visible';
+                responseDiv.innerHTML = '<pre>Loading audit logs...</pre>';
+                
+                let url = `${API_BASE}/api/referral/audit?limit=20`;
+                if (eventType) {
+                    url += `&eventType=${encodeURIComponent(eventType)}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    responseDiv.className = 'response visible success';
+                    responseDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    responseDiv.className = 'response visible error';
+                    responseDiv.innerHTML = `<pre>Error: ${data.error || 'Failed to fetch audit logs'}</pre>`;
+                }
+            } catch (err) {
+                responseDiv.className = 'response visible error';
+                responseDiv.innerHTML = `<pre>Error: ${err.message}</pre>`;
+            }
+        }
+        
+        /**
+         * Helper function to log audit events via API
+         */
+        async function logAuditEventAPI(eventType, eventData) {
+            try {
+                await fetch(`${API_BASE}/api/referral/audit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        eventType,
+                        eventData
+                    })
+                });
+            } catch (err) {
+                console.error('Failed to log audit event:', err);
+            }
+        }
+        
+        // Log page load
+        document.addEventListener('DOMContentLoaded', () => {
+            logAuditEventAPI('page_loaded', { 
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent
+            });
+        });
+    </script>
+</body>
+</html>
