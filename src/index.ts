@@ -10,6 +10,7 @@ import Redis from "ioredis";
 
 import { createReputationRouter } from "./reputation";
 import { createRateLimitFactory } from "./rateLimit";
+import { ENSResponses } from "./ensResponses";
 
 dotenv.config();
 
@@ -33,9 +34,12 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
 
 const app = express();
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Allow inline scripts for frontend
+}));
 app.use(cors({ origin: ORIGIN }));
 app.use(express.json());
+app.use(express.static("public")); // Serve frontend from public directory
 
 /**
  * Rate limiting (Phase 3A)
@@ -81,6 +85,38 @@ app.get("/api/nonce", rlMiddleware, async (req, res) => {
 });
 
 /**
+ * GET /api/ens/info
+ * - Returns ENS information and status
+ * - Protected by rlMiddleware when enabled
+ */
+app.get("/api/ens/info", rlMiddleware, async (req, res) => {
+  try {
+    const { ens, address } = req.query;
+    
+    if (ens) {
+      const resolved = await provider.resolveName(ens as string);
+      if (resolved) {
+        return res.json(ENSResponses.ensResolved(ens as string, resolved));
+      } else {
+        return res.status(404).json(ENSResponses.ensNotResolved(ens as string));
+      }
+    } else if (address) {
+      const reverse = await provider.lookupAddress(address as string);
+      if (reverse) {
+        return res.json(ENSResponses.reverseEnsFound(address as string, reverse));
+      } else {
+        return res.status(404).json(ENSResponses.reverseEnsMissing(address as string));
+      }
+    } else {
+      return res.json(ENSResponses.ensInfo());
+    }
+  } catch (err: any) {
+    console.error("GET /api/ens/info error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+/**
  * POST /api/verify
  * - Body: { message, signature, referralCode, ens? }
  * - Verifies SIWE (EIP-4361), checks nonce, optional ENS forward/reverse verification,
@@ -120,10 +156,10 @@ app.post("/api/verify", rlMiddleware, async (req, res) => {
     if (ens) {
       const resolved = await provider.resolveName(ens);
       if (!resolved) {
-        return res.status(400).json({ error: "ENS name does not resolve" });
+        return res.status(400).json(ENSResponses.ensNotResolved(ens));
       }
       if (resolved.toLowerCase() !== recoveredAddress) {
-        return res.status(400).json({ error: "ENS does not resolve to signer address" });
+        return res.status(400).json(ENSResponses.ensMismatch(ens, recoveredAddress, resolved.toLowerCase()));
       }
     }
 
@@ -132,13 +168,13 @@ app.post("/api/verify", rlMiddleware, async (req, res) => {
       try {
         const reverse = await provider.lookupAddress(recoveredAddress);
         if (!reverse) {
-          return res.status(400).json({ error: "Reverse ENS lookup returned no name for address" });
+          return res.status(400).json(ENSResponses.reverseEnsMissing(recoveredAddress));
         }
         if (ens && reverse.toLowerCase() !== ens.toLowerCase()) {
-          return res.status(400).json({ error: "Reverse ENS name does not match provided ENS" });
+          return res.status(400).json(ENSResponses.reverseEnsMismatch(recoveredAddress, ens, reverse));
         }
       } catch (e) {
-        return res.status(400).json({ error: "Reverse ENS lookup failed" });
+        return res.status(400).json(ENSResponses.reverseEnsMissing(recoveredAddress));
       }
     }
 
@@ -210,6 +246,115 @@ app.post("/api/referral/event", rlMiddleware, async (req, res) => {
 });
 
 /**
+ * GET /api/referral/event
+ * - Returns recent referral events
+ * - Protected by rlMiddleware when enabled
+ */
+app.get("/api/referral/event", rlMiddleware, async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit || 50), 100);
+    const offset = Number(req.query.offset || 0);
+    
+    const result = await pool.query(
+      `SELECT ae.id, ae.event_type, ae.event_payload, ae.amount, ae.created_at,
+              r.referral_code, r.referrer_ens, r.referrer_address
+       FROM attributed_events ae
+       JOIN referrals r ON ae.referral_id = r.id
+       ORDER BY ae.created_at DESC
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
+    );
+
+    res.json({ 
+      success: true,
+      events: result.rows,
+      count: result.rowCount
+    });
+  } catch (err: any) {
+    console.error("GET /api/referral/event error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+/**
+ * POST /api/referral/audit
+ * - Logs audit events for tracking user activity
+ * - Body: { eventType, userAddress?, ensName?, eventData?, ipAddress?, userAgent? }
+ * - Protected by rlMiddleware when enabled
+ */
+app.post("/api/referral/audit", rlMiddleware, async (req, res) => {
+  try {
+    const { eventType, userAddress, ensName, eventData } = req.body;
+    if (!eventType) {
+      return res.status(400).json({ error: "Missing required field: eventType" });
+    }
+
+    const insert = await pool.query(
+      `INSERT INTO audit_events (event_type, user_address, ens_name, event_data, ip_address, user_agent)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`,
+      [
+        eventType,
+        userAddress || null,
+        ensName || null,
+        eventData || null,
+        req.ip,
+        req.headers["user-agent"] || null
+      ]
+    );
+
+    res.json({ 
+      success: true, 
+      auditId: insert.rows[0].id,
+      createdAt: insert.rows[0].created_at,
+      message: "Audit event logged successfully"
+    });
+  } catch (err: any) {
+    console.error("POST /api/referral/audit error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+/**
+ * GET /api/referral/audit
+ * - Returns recent audit events (admin use)
+ * - Protected by rlMiddleware when enabled
+ */
+app.get("/api/referral/audit", rlMiddleware, async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit || 50), 100);
+    const offset = Number(req.query.offset || 0);
+    const eventType = req.query.eventType as string;
+    
+    let query = `
+      SELECT id, event_type, user_address, ens_name, event_data, ip_address, created_at
+      FROM audit_events
+    `;
+    const params: any[] = [];
+    
+    if (eventType) {
+      query += ` WHERE event_type = $1`;
+      params.push(eventType);
+      query += ` ORDER BY created_at DESC LIMIT $2 OFFSET $3`;
+      params.push(limit, offset);
+    } else {
+      query += ` ORDER BY created_at DESC LIMIT $1 OFFSET $2`;
+      params.push(limit, offset);
+    }
+
+    const result = await pool.query(query, params);
+
+    res.json({ 
+      success: true,
+      events: result.rows,
+      count: result.rowCount
+    });
+  } catch (err: any) {
+    console.error("GET /api/referral/audit error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+/**
  * Phase 2: Reputation router mounting
  */
 const reputationRouter = createReputationRouter(pool, provider, {
@@ -239,11 +384,4 @@ app.listen(PORT, () => {
   console.log(`ORIGIN: ${ORIGIN}  REQUIRE_REVERSE_ENS: ${REQUIRE_REVERSE_ENS}`);
   console.log(`RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED}`);
 });
-process.env.ORIGIN
 
-express.RequestHandler
-
-60
-http://localhost:3000
-
-app.post
