@@ -1,6 +1,6 @@
 {
   "name": "tamu-onchain-identity-layer",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "TAMU On-Chain Identity Layer - Decentralized Identity for Kota Marudu, Sabah",
   "main": "dist/index.js",
   "scripts": {
