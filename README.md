@@ -1,7 +1,14 @@
 # TAMUOnCHAIN-identity-layer
 
-🏔️ TAMU On-Chain (Identity Layer)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/TAMU-SABAHAN/TAMUOnCHAIN-identity-layer/releases/tag/v0.1.0)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](docker-compose.yml)
+[![Production Ready](https://img.shields.io/badge/production-ready-success.svg)]()
+
+🏔️ **TAMU On-Chain (Identity Layer)**  
 Empowering Kota Marudu, Sabah through Decentralized Identity.
+
+**✨ v0.1.0 Released!** - [View Release Notes](RELEASE_NOTES.md) | [Roadmap](ROADMAP.md)
 
 ## 🎯 Visi Kami
 Kami sedang membina lapisan identiti digital (Identity Layer) untuk komuniti di Kota Marudu. Projek ini bertujuan untuk membawa anak muda kita ke dalam ekonomi digital dunia menggunakan teknologi Web3.
@@ -93,3 +100,52 @@ The web interface (accessible at `/`) provides:
 - Rate limiting (Phase 3A)
 - Webhook secret validation
 - ENS verification (forward and reverse)
+
+## 📚 Documentation
+
+- **[Release Notes](RELEASE_NOTES.md)** - Detailed v0.1.0 release information
+- **[Roadmap](ROADMAP.md)** - Future phases and feature plans
+- **[Contributing](CONTRIBUTING.md)** - How to contribute to the project
+- **[Security Policy](SECURITY.md)** - Security guidelines and vulnerability reporting
+- **[Changelog](CHANGELOG.md)** - Version history and changes
+
+## 🤝 Contributing
+
+We welcome contributions from the community! Please read our [Contributing Guidelines](CONTRIBUTING.md) to get started.
+
+Areas we need help:
+- Code contributions and bug fixes
+- Documentation and tutorials
+- Testing and QA
+- Translation (Malay and local languages)
+- Community support
+
+## 🔒 Security
+
+Security is our top priority. If you discover a security vulnerability, please follow our [Security Policy](SECURITY.md) for responsible disclosure.
+
+**Do not** create public issues for security vulnerabilities. Contact us privately at Jrsteve900@gmail.com.
+
+## 📞 Contact & Support
+
+- **ENS**: jrsteve.eth, tamusabahan.eth
+- **Email**: Jrsteve900@gmail.com
+- **Twitter**: @Jrsteve10
+- **GitHub**: @Jrsteve900
+- **Location**: Kota Marudu, Sabah, Malaysia
+
+## 🙏 Acknowledgments
+
+- **jrsteve.eth** (JR. Steve) - Project Lead
+- **TaMuSaBahan.eth** - Community Representative
+- Kota Marudu Community - For the inspiration and support
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**🏔️ Built with Sabah Pride - Empowering Our Community Through Web3!**
+
+*Version 0.1.0 - February 6, 2026*
